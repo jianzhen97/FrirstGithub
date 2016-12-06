@@ -1,0 +1,77 @@
+练习使用github
+public class PhotoMenuDetailPager extends BaseMenuDetailPager {
+
+	private ListView lvPhoto;
+	private GridView gvPhoto;
+	private ArrayList<PhotoInfo> mPhotoList;
+	private PhotoAdapter mAdapter;
+	private ImageButton btnPhoto;
+
+	public PhotoMenuDetailPager(Activity activity, ImageButton btnPhoto) {
+		super(activity);
+
+		this.btnPhoto = btnPhoto;
+
+		btnPhoto.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				changeDisplay();
+			}
+		});
+	}
+
+	@Override
+	public View initViews() {
+		View view = View.inflate(mActivity, R.layout.menu_photo_pager, null);
+
+		lvPhoto = (ListView) view.findViewById(R.id.lv_photo);
+		gvPhoto = (GridView) view.findViewById(R.id.gv_photo);
+
+		return view;
+	}
+
+	@Override
+	public void initData() {
+
+		String cache = CacheUtils
+				.getCache(GlobalContants.PHOTOS_URL, mActivity);
+
+		if (!TextUtils.isEmpty(cache)) {
+
+		}
+
+		getDataFromServer();
+	}
+
+	private void getDataFromServer() {
+		HttpUtils utils = new HttpUtils();
+		utils.send(HttpMethod.GET, GlobalContants.PHOTOS_URL,
+				new RequestCallBack<String>() {
+
+					@Override
+					public void onSuccess(ResponseInfo<String> responseInfo) {
+						String result = (String) responseInfo.result;
+						parseData(result);
+						// 设置缓存
+						CacheUtils.setCache(GlobalContants.PHOTOS_URL, result,
+								mActivity);
+					}
+
+					@Override
+					public void onFailure(HttpException error, String msg) {
+						Toast.makeText(mActivity, msg, Toast.LENGTH_SHORT)
+								.show();
+						error.printStackTrace();
+					}
+				});
+	}
+
+	protected void parseData(String result) {
+		Gson gson = new Gson();
+		PhotosData data = gson.fromJson(result, PhotosData.class);
+
+		mPhotoList = data.data.news;// 获取组图列表集合
+
+		if (mPhotoList != null) {
+			mAdapter = new PhotoAdapter();
