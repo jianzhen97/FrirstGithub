@@ -1,0 +1,6 @@
+
+	protected void parseData(String result) {
+		Gson gson = new Gson();
+		PhotosData data = gson.fromJson(result, PhotosData.class);
+
+		mPhotoList = data.data.news;// 获取组图列表集合
